@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "813411726940",
+    "project_id": "simplelink-89a02",
+    "storage_bucket": "simplelink-89a02.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813411726940:android:e059e6799e2f42ae925899",
+        "android_client_info": {
+          "package_name": "com.example.google_search_api"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "813411726940-egda4v6guv2vvvsvrh2d3nvf5hff3tm1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.google_search_api",
+            "certificate_hash": "1a2d189b74bcb7a830d8f6eaaa25468095ed9289"
+          }
+        },
+        {
+          "client_id": "813411726940-360kj8lh5potei4le6ftuss5jpcp62u0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCL4l6pRQS09vHL_MvoLiPVzwA06vBATwc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813411726940-360kj8lh5potei4le6ftuss5jpcp62u0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
