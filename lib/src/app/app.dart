@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_search_api/src/app/page/googleSearch/googleSearch.dart';
 import 'package:google_search_api/src/app/page/home.dart';
 
 class App extends StatelessWidget {
@@ -15,7 +16,7 @@ class App extends StatelessWidget {
           );
         }
         if (snapshot.connectionState == ConnectionState.done) {
-          return Home();
+          return SearchForm();
         }
         return CircularProgressIndicator();
       },
