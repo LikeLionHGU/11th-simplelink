@@ -11,7 +11,9 @@
   <component name="ChangeListManager">
     <list default="true" id="bf8c233b-e127-44c2-91a6-d38d7332af11" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/app/page/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/login.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Runner/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner/Info.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/app/app.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/app.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +64,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\flutter_project\SimpleLink\ios\Runner" />
       <recent name="C:\flutter_project\google_search_api\lib\src\app" />
       <recent name="C:\flutter_project\google_search_api\lib\src" />
       <recent name="C:\flutter_project\google_search_api\android\app" />
