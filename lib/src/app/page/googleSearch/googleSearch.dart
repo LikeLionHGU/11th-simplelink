@@ -1,13 +1,11 @@
-//전체 코드
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
 class SearchForm extends StatefulWidget {
-  final String initialQuery; // 초기 검색어
+  final String initialQuery;
 
   SearchForm({required this.initialQuery});
 
@@ -17,44 +15,38 @@ class SearchForm extends StatefulWidget {
 
 class _SearchFormState extends State<SearchForm> {
   String _searchText = '';
-  List<String> _searchResults = [];
+  List<dynamic> _searchResults = [];
+
   @override
   void initState() {
     super.initState();
-    _searchText = widget.initialQuery; // 초기 검색어 설정
-    _loadSearchResults(); // Load search results
+    _searchText = widget.initialQuery;
+    _loadSearchResults();
   }
 
   Future<void> _loadSearchResults() async {
     try {
       List<dynamic> results = await searchGoogle(_searchText);
       setState(() {
-        _searchResults =
-            results.map((result) => result['link'] as String).take(2).toList();
+        _searchResults = results.map((result) => result).toList();
       });
     } catch (error) {
       print('Error loading search results: $error');
-      // Handle error loading search results if needed
     }
   }
 
-  //url에 해당하는 버튼을 화면에서 눌렀을때 해당 url을 launch하는 메서드
-  //todo 아직 열리지 않는당... 이유는 몰름
   Future<void> launchURL(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    if (await canLaunch(url)) {
+      await launch(url);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch $url')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Could not launch $url')));
     }
   }
 
-  //구글 내에서 검색을 하는 메서드
   Future<List<dynamic>> searchGoogle(String query) async {
     final apiKey = 'AIzaSyDvGCnxpSQfvupl0YW2tjhHIEXMut3JKvU';
     final customSearchEngineId = 'c41ab699082cc4121';
-
     final url = Uri.https(
       'www.googleapis.com',
       '/customsearch/v1',
@@ -64,7 +56,6 @@ class _SearchFormState extends State<SearchForm> {
         'q': query,
       },
     );
-
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -80,32 +71,74 @@ class _SearchFormState extends State<SearchForm> {
     return Material(
       child: Column(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: _searchText.isNotEmpty && _searchResults.isEmpty
-                      ? CircularProgressIndicator()
-                      : SizedBox(),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: ListView.builder(
-              itemBuilder: (_, index) {
-                String result = _searchResults[index];
-                return ListTile(
-                  title: Text(result),
-                  onTap: () {
-                    if (result.isNotEmpty) {
-                      launchURL(result);
-                    }
-                  },
+              itemBuilder: (context, index) {
+                var result = _searchResults[index];
+
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                  child: InkWell(
+                    onTap: () {
+                      launchURL(result['link']);
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    result['pagemap']['cse_thumbnail'] != null
+                                        ? Image.network(
+                                      result['pagemap']['cse_thumbnail'][0]['src'],
+                                      width: 16,
+                                      height: 16,
+                                      fit: BoxFit.cover,
+                                    )
+                                        : SizedBox(),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      result['displayLink'],
+                                      style: TextStyle(
+                                          fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  result['title'],
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  result['snippet'],
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  maxLines: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (result['pagemap']['cse_thumbnail'] != null) SizedBox(width: 5),
+                        if (result['pagemap']['cse_thumbnail'] != null)
+                          Image.network(
+                            result['pagemap']['cse_thumbnail'][0]['src'],
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                      ],
+                    ),
+                  ),
                 );
               },
-              itemCount: _searchResults.length,
+              itemCount: _searchResults.length > 2 ? 2 : _searchResults.length,
             ),
           ),
         ],
