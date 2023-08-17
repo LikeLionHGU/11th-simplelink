@@ -1,8 +1,10 @@
-import 'dart:convert';
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'firebase.dart';
 
 class SearchForm extends StatefulWidget {
   final String initialQuery;
@@ -14,8 +16,10 @@ class SearchForm extends StatefulWidget {
 }
 
 class _SearchFormState extends State<SearchForm> {
+  FireBasePage firebase  = FireBasePage();
   String _searchText = '';
   List<dynamic> _searchResults = [];
+
 
   @override
   void initState() {
@@ -44,6 +48,9 @@ class _SearchFormState extends State<SearchForm> {
     }
   }
 
+
+
+
   Future<List<dynamic>> searchGoogle(String query) async {
     final apiKey = 'AIzaSyDvGCnxpSQfvupl0YW2tjhHIEXMut3JKvU';
     final customSearchEngineId = 'c41ab699082cc4121';
@@ -60,7 +67,18 @@ class _SearchFormState extends State<SearchForm> {
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
-      return jsonResponse['items'];
+      List<dynamic> items = jsonResponse['items'];
+
+      if (items.isNotEmpty) {
+        await firebase.saveHistoryToFirebase(
+          query,
+          items.sublist(0, 2).map((item) => item as Map<String, dynamic>).toList(),
+        );
+        await firebase.saveKeywordAndUserIDToFirebase(query);
+        await firebase.getAllKeywordsByUserID();
+      }
+
+      return items;
     } else {
       throw Exception('Failed to load search results');
     }
@@ -76,12 +94,19 @@ class _SearchFormState extends State<SearchForm> {
               itemBuilder: (context, index) {
                 var result = _searchResults[index];
 
+                // 각 카드 정보별로 변수 선언
+                final cseThumbnail = result['pagemap']['cse_thumbnail'];
+                final displayLink = result['displayLink'];
+                final title = result['title'];
+                final snippet = result['snippet'];
+                final link = result['link'];
+
                 return Card(
                   clipBehavior: Clip.antiAlias,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   child: InkWell(
                     onTap: () {
-                      launchURL(result['link']);
+                      launchURL(link);
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,9 +119,9 @@ class _SearchFormState extends State<SearchForm> {
                               children: [
                                 Row(
                                   children: [
-                                    result['pagemap']['cse_thumbnail'] != null
+                                    cseThumbnail != null
                                         ? Image.network(
-                                      result['pagemap']['cse_thumbnail'][0]['src'],
+                                      cseThumbnail[0]['src'],
                                       width: 16,
                                       height: 16,
                                       fit: BoxFit.cover,
@@ -104,7 +129,7 @@ class _SearchFormState extends State<SearchForm> {
                                         : SizedBox(),
                                     SizedBox(width: 8),
                                     Text(
-                                      result['displayLink'],
+                                      displayLink,
                                       style: TextStyle(
                                           fontSize: 12, fontWeight: FontWeight.bold),
                                     ),
@@ -112,12 +137,12 @@ class _SearchFormState extends State<SearchForm> {
                                 ),
                                 SizedBox(height: 6),
                                 Text(
-                                  result['title'],
+                                  title,
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 SizedBox(height: 6),
                                 Text(
-                                  result['snippet'],
+                                  snippet,
                                   style: TextStyle(fontSize: 14, color: Colors.grey),
                                   maxLines: 2,
                                 ),
@@ -125,10 +150,10 @@ class _SearchFormState extends State<SearchForm> {
                             ),
                           ),
                         ),
-                        if (result['pagemap']['cse_thumbnail'] != null) SizedBox(width: 5),
-                        if (result['pagemap']['cse_thumbnail'] != null)
+                        if (cseThumbnail != null) SizedBox(width: 5),
+                        if (cseThumbnail != null)
                           Image.network(
-                            result['pagemap']['cse_thumbnail'][0]['src'],
+                            cseThumbnail[0]['src'],
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
