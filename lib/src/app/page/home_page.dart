@@ -234,6 +234,7 @@ class _HomePageState extends State<HomePage> {
           initialQuery: _responseModel.choices.isNotEmpty
               ? _responseModel.choices[0].message.content
               : '',
+          question: promptController.text,
         ),
       ),
     );
@@ -290,7 +291,8 @@ class TextFormFieldBldr extends StatelessWidget {
         style: const TextStyle(color: Colors.black87, fontSize: 16, height: 2),
         decoration: InputDecoration(
           contentPadding:
-          EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
+
+              const EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white),
             borderRadius: BorderRadius.circular(8),
@@ -317,15 +319,13 @@ class TextFormFieldBldr extends StatelessWidget {
               shape: BoxShape.circle,
               color: Color(0xff00429A),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ],
+            child: IconButton(
+              onPressed: () => btnFun(),
+              icon: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
         ),
