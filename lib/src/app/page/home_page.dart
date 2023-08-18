@@ -32,7 +32,55 @@ class _HomePageState extends State<HomePage> {
     "개강 전 준비해야 할 일",
   ];
   var _showAllPreviousQuestions = false;
+  completionFunPara(String buttonText) async {
 
+    setState(() {
+      messages.add({"role": "user", "content": buttonText});
+      messages.add({"role": "assistant", "content": 'Loading...'});
+    });
+
+    print(
+        "API 요청 전: ${buttonText} Curious about this, what should I Google? Answer only one keyword");
+    final response = await http.post(
+      Uri.parse('https://api.openai.com/v1/chat/completions'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${dotenv.env['token']}',
+      },
+      body: jsonEncode({
+        "messages": [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {
+            "role": "user",
+            "content":
+            "${buttonText} Curious about this, what should I Google? Answer only one keyword"
+          }
+        ],
+        "model": "gpt-3.5-turbo", // Use the appropriate chat model
+      }),
+    );
+
+
+    setState(() {
+      final responseData = json.decode(response.body) as Map<String, dynamic>;
+      _responseModel = ResponseModel.fromJson(responseData);
+      messages.last["content"] = _responseModel.choices.isNotEmpty
+          ? (_responseModel.choices[0].message.content)
+          : '';
+      debugPrint(messages.last["content"]);
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchForm(
+          initialQuery: _responseModel.choices.isNotEmpty
+              ? _responseModel.choices[0].message.content
+              : '',
+          question: buttonText,
+        ),
+      ),
+    );
+  }
   @override
   void initState() {
     promptController = TextEditingController();
@@ -138,6 +186,9 @@ class _HomePageState extends State<HomePage> {
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 24, vertical: 4),
                             child: ListTile(
+                              onTap: (){
+                                completionFunPara(snapshot.data![index]);
+                              },
                               contentPadding: EdgeInsets.zero,
                               title: Padding(
                                 padding: const EdgeInsets.only(left: 8),
