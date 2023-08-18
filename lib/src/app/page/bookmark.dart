@@ -4,7 +4,6 @@ import 'package:google_search_api/src/app/page/googleSearch/firebase.dart';
 import 'package:google_search_api/src/app/page/googleSearch/googleSearch.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class BookmarkPage extends StatefulWidget {
   const BookmarkPage({Key? key}) : super(key: key);
 
@@ -25,24 +24,41 @@ class _BookmarkPageState extends State<BookmarkPage> {
           .showSnackBar(SnackBar(content: Text('Could not launch $url')));
     }
   }
+
   @override
   void initState() {
     super.initState();
 
-
-      _bookmarks = firebase.getUserBookmarks(); // userId 전달
-      print(_bookmarks);
-
+    _bookmarks = firebase.getUserBookmarks(); // userId 전달
+    print(_bookmarks);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('북마크 관리'),
+        centerTitle: true,
+        backgroundColor: const Color(0xff0067C0),
+        title: const Text(
+          "저장된 링크",
+          style: TextStyle(
+            fontFamily: "SF Pro",
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 17 / 14,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-
         future: _bookmarks,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -60,10 +76,115 @@ class _BookmarkPageState extends State<BookmarkPage> {
                 String snippet = snapshot.data![index]['snippet'];
                 String link = snapshot.data![index]['link'];
                 String? cseThumbnail = snapshot.data![index]['cse_thumbnail'];
-                return Card(
+                return Container(
+                  margin: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+                  // margin: const EdgeInsets.only(bottom: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, // 배경색 없애기
+                    border:
+                        Border.all(color: Colors.grey.shade300), // 테두리 회색으로 변경
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      launchURL(link);
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    cseThumbnail != null
+                                        ? Image.network(
+                                            cseThumbnail,
+                                            width: 16,
+                                            height: 16,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : const Icon(Icons.public, size: 16),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      displayLink ?? "",
+                                      style: const TextStyle(
+                                        fontFamily: "SF Pro",
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xff333333),
+                                        height: 12 / 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontFamily: "SF Pro",
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff000000),
+                                    height: 14 / 12,
+                                  ),
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  snippet,
+                                  style: const TextStyle(
+                                    fontFamily: "SF Pro",
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff888888),
+                                    height: 1,
+                                  ),
+                                  maxLines: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (cseThumbnail != null) const SizedBox(width: 5),
+                        if (cseThumbnail != null)
+                          Image.network(
+                            cseThumbnail,
+                            width: 120,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        // IconButton(
+                        //   icon: Icon(
+                        //     _bookmarked[index]
+                        //         ? Icons.bookmark
+                        //         : Icons.bookmark_border,
+                        //   ),
+                        //   onPressed: () async {
+                        //     bool newBookmark = !_bookmarked[index];
+                        //     Future<String?> bookmarkDocumentID =
+                        //         firebase.updateBookmark(
+                        //             _searchText,
+                        //             _searchResults[index],
+                        //             newBookmark); // 북마크 업데이트
+                        //     setState(() {
+                        //       _bookmarked[index] =
+                        //           newBookmark; // 해당 카드의 북마크 상태를 토글한다.
+                        //     });
+                        //   },
+                        // ),
+                      ],
+                    ),
+                  ),
+                );
 
+                Card(
                   clipBehavior: Clip.antiAlias,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
                   child: InkWell(
                     onTap: () {
                       launchURL(link);
@@ -81,19 +202,19 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                   children: [
                                     cseThumbnail != null
                                         ? Image.network(
-                                      cseThumbnail,
-                                      width: 16,
-                                      height: 16,
-                                      fit: BoxFit.cover,
-                                    )
+                                            cseThumbnail,
+                                            width: 16,
+                                            height: 16,
+                                            fit: BoxFit.cover,
+                                          )
                                         : SizedBox(),
                                     SizedBox(width: 8),
                                     Text(
-                                      displayLink?? "" ,
+                                      displayLink ?? "",
                                       style: TextStyle(
-                                          fontSize: 12, fontWeight: FontWeight.bold),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
                                     ),
-
                                   ],
                                 ),
                                 SizedBox(height: 6),
@@ -104,7 +225,8 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                 SizedBox(height: 6),
                                 Text(
                                   snippet,
-                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey),
                                   maxLines: 2,
                                 ),
                               ],
@@ -119,7 +241,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
                             height: 100,
                             fit: BoxFit.cover,
                           ),
-
                         IconButton(
                           icon: Icon(
                             Icons.bookmark,
@@ -127,12 +248,14 @@ class _BookmarkPageState extends State<BookmarkPage> {
                           onPressed: () async {
                             print(link);
                             print(keyword);
-                            String? bookmarkDocumentID = await firebase.deleteBookmarkInBookmarkPage(keyword, link);
+                            String? bookmarkDocumentID = await firebase
+                                .deleteBookmarkInBookmarkPage(keyword, link);
 
                             // 북마크 삭제 성공시 리스트 업데이트 및 화면 갱신
                             if (bookmarkDocumentID != null) {
                               setState(() {
-                                _bookmarks = firebase.getUserBookmarks(); // Comment: userId 전달
+                                _bookmarks = firebase
+                                    .getUserBookmarks(); // Comment: userId 전달
                               });
                             } else {
                               // 오류 메시지 표시
@@ -144,14 +267,9 @@ class _BookmarkPageState extends State<BookmarkPage> {
                             }
                           },
                         ),
-
-
-
                       ],
-
                     ),
                   ),
-
                 );
               },
             );

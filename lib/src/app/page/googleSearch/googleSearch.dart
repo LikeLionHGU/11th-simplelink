@@ -48,6 +48,7 @@ class _SearchFormState extends State<SearchForm> {
       _bookmarked = List.generate(results.length, (index) => false);
       setState(() {
         _searchResults = results;
+        print("여기 ${_searchResults}");
       });
     } catch (error) {
       print('Error loading search results: $error');
@@ -195,6 +196,7 @@ class _SearchFormState extends State<SearchForm> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: const Color(0xff0067C0),
         title: const Text(
           "검색결과",
@@ -403,7 +405,6 @@ class _SearchFormState extends State<SearchForm> {
               itemCount: _searchResults.length > 2 ? 2 : _searchResults.length,
             ),
           ),
-
           const Row(
             children: [
               SizedBox(width: 24),
@@ -430,6 +431,7 @@ class _SearchFormState extends State<SearchForm> {
               color: const Color(0xffF1F1F1),
               borderRadius: BorderRadius.circular(5.0),
             ),
+
             child: _summaryExist?  Text(
               summary,
               style: TextStyle(
@@ -439,6 +441,7 @@ class _SearchFormState extends State<SearchForm> {
                 height: 1.2,
               ),
             ):  CircularProgressIndicator(),
+
           ),
           const Row(
             children: [
