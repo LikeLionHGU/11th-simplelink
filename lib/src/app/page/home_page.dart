@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          centerTitle: true,
           backgroundColor: const Color(0xff0067C0),
           title: Image.asset('assets/logo.png', // 로고 이미지 경로
               width: 80),
@@ -58,15 +59,14 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.bookmark_border_outlined),
               color: Colors.white,
               onPressed: () {
-                completionFun();
-                // 다른 페이지로 넘어가는 동작 구현
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => BookmarkPage(),
-                //
-                //   ),
-                // );
+                // completionFun();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookmarkPage(),
+                  ),
+                );
               },
             ),
           ],
@@ -124,8 +124,8 @@ class _HomePageState extends State<HomePage> {
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {
-                    print("length:${snapshot.data!.length }");
-                    print("bool:${_showAllPreviousQuestions }");
+                    print("length:${snapshot.data!.length}");
+                    print("bool:${_showAllPreviousQuestions}");
                     final List<String> keywords = snapshot.data!;
                     return ListView.builder(
                       itemCount: _showAllPreviousQuestions
@@ -166,28 +166,27 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
 
-            if (snapshot.data!.length > 5 && !_showAllPreviousQuestions){
-              TextButton(
-                onPressed: () {
-                  print(firebase.getTop5KeywordsByUserID());
-                  completionFun();
-                  setState(() {
-                    _showAllPreviousQuestions = true; // "기록 더보기" 버튼을 누르면 모두 표시
-                  });
-                },
-                child: const Text("펼쳐보기",
-                    style: TextStyle(
-                      fontFamily: "SF Pro",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff727781),
-                      height: 14 / 12,
-                      decoration: TextDecoration.underline,
-                    )));}
-
-
-                }
-            ),
+                  if (snapshot.data!.length > 5 && !_showAllPreviousQuestions) {
+                    TextButton(
+                        onPressed: () {
+                          print(firebase.getTop5KeywordsByUserID());
+                          completionFun();
+                          setState(() {
+                            _showAllPreviousQuestions =
+                                true; // "기록 더보기" 버튼을 누르면 모두 표시
+                          });
+                        },
+                        child: const Text("펼쳐보기",
+                            style: TextStyle(
+                              fontFamily: "SF Pro",
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff727781),
+                              height: 14 / 12,
+                              decoration: TextDecoration.underline,
+                            )));
+                  }
+                }),
           ),
         ]));
   }
@@ -291,7 +290,6 @@ class TextFormFieldBldr extends StatelessWidget {
         style: const TextStyle(color: Colors.black87, fontSize: 16, height: 2),
         decoration: InputDecoration(
           contentPadding:
-
               const EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white),
