@@ -45,6 +45,7 @@ class _SearchFormState extends State<SearchForm> {
       _bookmarked = List.generate(results.length, (index) => false);
       setState(() {
         _searchResults = results;
+        print("여기 ${_searchResults}");
       });
     } catch (error) {
       print('Error loading search results: $error');
