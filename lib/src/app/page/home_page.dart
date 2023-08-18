@@ -1,20 +1,23 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:google_search_api/src/app/page/bookmark.dart';
 import 'package:google_search_api/src/app/page/googleSearch/googleSearch.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../response_model.dart';
+import 'googleSearch/firebase.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage();
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  FireBasePage firebase = FireBasePage();
   late final TextEditingController promptController;
   List<Map<String, dynamic>> messages = [];
   late ResponseModel _responseModel;
@@ -55,7 +58,15 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.bookmark_border_outlined),
               color: Colors.white,
               onPressed: () {
+                completionFun();
                 // 다른 페이지로 넘어가는 동작 구현
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => BookmarkPage(),
+                //
+                //   ),
+                // );
               },
             ),
           ],
@@ -105,46 +116,61 @@ class _HomePageState extends State<HomePage> {
                 textAlign: TextAlign.left,
               )),
           Expanded(
-            child: ListView.builder(
-              itemCount: _showAllPreviousQuestions
-                  ? _previousQuestions.length
-                  : 5, // 최대 5개까지만 표시하거나 모두 표시
-              itemBuilder: (context, index) {
-                return Card(
-                    color: const Color(0xffF1F1F1),
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Text(
-                          _previousQuestions[index],
-                          style: const TextStyle(
-                              // fontFamily: "SF Pro",
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff1b1b1b),
-                              height: 1),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close),
-                        iconSize: 15,
-                        onPressed: () {
-                          // X 버튼을 눌렀을 때의 동작 구현
-                          setState(() {
-                            _previousQuestions.removeAt(index);
-                          });
-                        },
-                      ),
-                    ));
-              },
-            ),
-          ),
-          if (_previousQuestions.length > 5 && !_showAllPreviousQuestions)
-            TextButton(
+            child: FutureBuilder(
+                future: firebase.getAllKeywordsByUserID(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    print("length:${snapshot.data!.length }");
+                    print("bool:${_showAllPreviousQuestions }");
+                    final List<String> keywords = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: _showAllPreviousQuestions
+                          ? snapshot.data!.length
+                          : 5, // 최대 5개까지만 표시하거나 모두 표시
+                      itemBuilder: (context, index) {
+                        print(index);
+                        return Card(
+                            color: const Color(0xffF1F1F1),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 4),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(
+                                  snapshot.data![index],
+                                  style: const TextStyle(
+                                      // fontFamily: "SF Pro",
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff1b1b1b),
+                                      height: 1),
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close),
+                                iconSize: 15,
+                                onPressed: () {
+                                  // X 버튼을 눌렀을 때의 동작 구현
+                                  setState(() {
+                                    snapshot.data!.removeAt(index);
+                                  });
+                                },
+                              ),
+                            ));
+                      },
+                    );
+                  }
+
+            if (snapshot.data!.length > 5 && !_showAllPreviousQuestions){
+              TextButton(
                 onPressed: () {
+                  print(firebase.getTop5KeywordsByUserID());
+                  completionFun();
                   setState(() {
                     _showAllPreviousQuestions = true; // "기록 더보기" 버튼을 누르면 모두 표시
                   });
@@ -157,7 +183,12 @@ class _HomePageState extends State<HomePage> {
                       color: Color(0xff727781),
                       height: 14 / 12,
                       decoration: TextDecoration.underline,
-                    ))),
+                    )));}
+
+
+                }
+            ),
+          ),
         ]));
   }
 
@@ -260,6 +291,7 @@ class TextFormFieldBldr extends StatelessWidget {
         style: const TextStyle(color: Colors.black87, fontSize: 16, height: 2),
         decoration: InputDecoration(
           contentPadding:
+
               const EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white),
@@ -302,8 +334,8 @@ class TextFormFieldBldr extends StatelessWidget {
   }
 }
 
-  // children: [
-  //           Expanded(child: PromptBldr(messages: messages)),
-  //           TextFormFieldBldr(
-  //               promptController: promptController, btnFun: completionFun),
-  //         ],
+// children: [
+//           Expanded(child: PromptBldr(messages: messages)),
+//           TextFormFieldBldr(
+//               promptController: promptController, btnFun: completionFun),
+//         ],

@@ -1,8 +1,8 @@
-import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'firebase.dart';
 import '../../../response_model2.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -17,13 +17,18 @@ class SearchForm extends StatefulWidget {
 }
 
 class _SearchFormState extends State<SearchForm> {
+  String _searchResult = '';
+  FireBasePage firebase = FireBasePage();
   String _searchText = '';
   String _questionText = '';
   List<dynamic> _searchResults = [];
+  List<bool> _bookmarked = []; // 북마크 상태 리스트 생성
+  bool _summaryExist = false;
   List<Map<String, dynamic>> messages = [];
   late ResponseModel2 _responseModel;
   List<String> textBoxTexts = [];
   late List<String> searchTexts = [];
+
   @override
   void initState() {
     super.initState();
@@ -36,8 +41,10 @@ class _SearchFormState extends State<SearchForm> {
   Future<void> _loadSearchResults() async {
     try {
       List<dynamic> results = await searchGoogle(_searchText);
+      // 검색된 결과에 대한 북마크 상태를 초기화한다.
+      _bookmarked = List.generate(results.length, (index) => false);
       setState(() {
-        _searchResults = results.map((result) => result).toList();
+        _searchResults = results;
       });
     } catch (error) {
       print('Error loading search results: $error');
@@ -106,6 +113,40 @@ class _SearchFormState extends State<SearchForm> {
     }
   }
 
+  Future<void> _searchSummary(String query) async {
+    String apiKey =
+        'AIzaSyDvGCnxpSQfvupl0YW2tjhHIEXMut3JKvU'; // 여기에 API 키를 입력합니다.
+    String apiUrl =
+        'https://kgsearch.googleapis.com/v1/entities:search?query=$query&key=$apiKey&limit=1&indent=True';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        if (result['itemListElement'] != null &&
+            result['itemListElement'].length > 0) {
+          setState(() {
+            _summaryExist = true;
+            _searchResult = result['itemListElement'][0]['result']
+                ['detailedDescription']["articleBody"];
+          });
+        } else {
+          setState(() {
+            _searchResult = '결과를 찾을 수 없습니다.';
+          });
+        }
+      } else {
+        setState(() {
+          _searchResult = 'API 요청 오류: ${response.statusCode}';
+        });
+        throw Exception('Failed to load data.');
+      }
+    } catch (err) {
+      print(err);
+    }
+    print("결과: ${_searchResult}");
+  }
+
   Future<List<dynamic>> searchGoogle(String query) async {
     const apiKey = 'AIzaSyDvGCnxpSQfvupl0YW2tjhHIEXMut3JKvU';
     const customSearchEngineId = 'c41ab699082cc4121';
@@ -119,10 +160,23 @@ class _SearchFormState extends State<SearchForm> {
       },
     );
     final response = await http.get(url);
-
+    await _searchSummary(query);
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
-      return jsonResponse['items'];
+      List<dynamic> items = jsonResponse['items'];
+
+      if (items.isNotEmpty) {
+        await firebase.saveHistoryToFirebase(
+          query,
+          items
+              .sublist(0, 2)
+              .map((item) => item as Map<String, dynamic>)
+              .toList(),
+        );
+        await firebase.saveKeywordAndUserIDToFirebase(query);
+      }
+
+      return items;
     } else {
       throw Exception('Failed to load search results');
     }
@@ -227,6 +281,13 @@ class _SearchFormState extends State<SearchForm> {
               itemBuilder: (context, index) {
                 var result = _searchResults[index];
 
+                // 각 카드 정보별로 변수 선언
+                final cseThumbnail = result['pagemap']['cse_thumbnail'];
+                final displayLink = result['displayLink'];
+                final title = result['title'];
+                final snippet = result['snippet'];
+                final link = result['link'];
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 6),
                   decoration: BoxDecoration(
@@ -237,7 +298,7 @@ class _SearchFormState extends State<SearchForm> {
                   ),
                   child: InkWell(
                     onTap: () {
-                      launchURL(result['link']);
+                      launchURL(link);
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,10 +311,9 @@ class _SearchFormState extends State<SearchForm> {
                               children: [
                                 Row(
                                   children: [
-                                    result['pagemap']['cse_thumbnail'] != null
+                                    cseThumbnail != null
                                         ? Image.network(
-                                            result['pagemap']['cse_thumbnail']
-                                                [0]['src'],
+                                            cseThumbnail[0]['src'],
                                             width: 16,
                                             height: 16,
                                             fit: BoxFit.cover,
@@ -274,7 +334,7 @@ class _SearchFormState extends State<SearchForm> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  result['title'],
+                                  title,
                                   style: const TextStyle(
                                     fontFamily: "SF Pro",
                                     fontSize: 12,
@@ -286,7 +346,7 @@ class _SearchFormState extends State<SearchForm> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  result['snippet'],
+                                  snippet,
                                   style: const TextStyle(
                                     fontFamily: "SF Pro",
                                     fontSize: 10,
@@ -300,15 +360,33 @@ class _SearchFormState extends State<SearchForm> {
                             ),
                           ),
                         ),
-                        if (result['pagemap']['cse_thumbnail'] != null)
-                          const SizedBox(width: 5),
-                        if (result['pagemap']['cse_thumbnail'] != null)
+                        if (cseThumbnail != null) const SizedBox(width: 5),
+                        if (cseThumbnail != null)
                           Image.network(
-                            result['pagemap']['cse_thumbnail'][0]['src'],
+                            cseThumbnail[0]['src'],
                             width: 120,
                             height: 100,
                             fit: BoxFit.cover,
                           ),
+                        IconButton(
+                          icon: Icon(
+                            _bookmarked[index]
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
+                          ),
+                          onPressed: () async {
+                            bool newBookmark = !_bookmarked[index];
+                            Future<String?> bookmarkDocumentID =
+                                firebase.updateBookmark(
+                                    _searchText,
+                                    _searchResults[index],
+                                    newBookmark); // 북마크 업데이트
+                            setState(() {
+                              _bookmarked[index] =
+                                  newBookmark; // 해당 카드의 북마크 상태를 토글한다.
+                            });
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -317,6 +395,7 @@ class _SearchFormState extends State<SearchForm> {
               itemCount: _searchResults.length > 2 ? 2 : _searchResults.length,
             ),
           ),
+
           const Row(
             children: [
               SizedBox(width: 24),
@@ -343,15 +422,15 @@ class _SearchFormState extends State<SearchForm> {
               color: const Color(0xffF1F1F1),
               borderRadius: BorderRadius.circular(5.0),
             ),
-            child: const Text(
-              "멋사는 중앙이 아닌 각 대학에서 모집하기에 일정과 서류/면접 질문 등이 대학마다 상이하다.",
+            child: _summaryExist?  Text(
+              _searchResult,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Color(0xff333333),
                 height: 1.2,
               ),
-            ),
+            ):  CircularProgressIndicator(),
           ),
           const Row(
             children: [
@@ -379,17 +458,17 @@ class _SearchFormState extends State<SearchForm> {
     );
   }
 
-  // Navigator.push(
-  //   context,
-  //   MaterialPageRoute(
-  //     builder: (context) => SearchForm(
-  //       initialQuery: _responseModel.choices.isNotEmpty
-  //           ? _responseModel.choices[0].message.content
-  //           : '',
-  //       question: promptController.text,
-  //     ),
-  //   ),
-  // );
+// Navigator.push(
+//   context,
+//   MaterialPageRoute(
+//     builder: (context) => SearchForm(
+//       initialQuery: _responseModel.choices.isNotEmpty
+//           ? _responseModel.choices[0].message.content
+//           : '',
+//       question: promptController.text,
+//     ),
+//   ),
+// );
 }
 
 class TextBox extends StatefulWidget {
