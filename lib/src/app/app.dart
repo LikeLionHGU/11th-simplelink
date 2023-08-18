@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_search_api/src/app/page/googleSearch/googleSearch.dart';
 import 'package:google_search_api/src/app/page/home.dart';
+import 'package:google_search_api/src/app/page/login.dart';
+import 'package:google_search_api/src/app/page/onboarding.dart';
 import 'page/home_page.dart';
 
 class App extends StatelessWidget {

@@ -24,6 +24,7 @@ class _SearchFormState extends State<SearchForm> {
   FireBasePage firebase = FireBasePage();
   String _searchText = '';
   String _questionText = '';
+  String summary = '';
   List<dynamic> _searchResults = [];
   List<bool> _bookmarked = []; // 북마크 상태 리스트 생성
   bool _summaryExist = false;
@@ -129,17 +130,17 @@ class _SearchFormState extends State<SearchForm> {
             result['itemListElement'].length > 0) {
           setState(() {
             _summaryExist = true;
-            _searchResult = result['itemListElement'][0]['result']
+            summary = result['itemListElement'][0]['result']
                 ['detailedDescription']["articleBody"];
           });
         } else {
           setState(() {
-            _searchResult = '결과를 찾을 수 없습니다.';
+            _searchResult = '';
           });
         }
       } else {
         setState(() {
-          _searchResult = 'API 요청 오류: ${response.statusCode}';
+          _searchResult = '';
         });
         throw Exception('Failed to load data.');
       }
@@ -170,10 +171,13 @@ class _SearchFormState extends State<SearchForm> {
       if (items.isNotEmpty) {
         await firebase.saveHistoryToFirebase(
           _questionText,
+          summary,
+          searchTexts,
           items
               .sublist(0, 2)
               .map((item) => item as Map<String, dynamic>)
               .toList(),
+
         );
         await firebase.saveKeywordAndUserIDToFirebase(_questionText);
       }
@@ -427,7 +431,7 @@ class _SearchFormState extends State<SearchForm> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: _summaryExist?  Text(
-              _searchResult,
+              summary,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

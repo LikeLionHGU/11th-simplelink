@@ -130,13 +130,15 @@ class FireBasePage {
     }
   }
 
-  Future<void> saveHistoryToFirebase(String keyword, List<Map<String, dynamic>> searchResults) async {
+  Future<void> saveHistoryToFirebase(String keyword,String resultSummary, List<String> searchTexts,List<Map<String, dynamic>> searchResults) async {
     String userID = FirebaseAuth.instance.currentUser!.uid;
 
     // 결과 목록을 반복하면서 각 결과에 대해 Firestore에 저장합니다.
     for (final searchResult in searchResults) {
       final displayLink = searchResult['displayLink'];
-
+      String summary = resultSummary;
+      print(summary);
+      final searchThreeText = searchTexts;
       var cseThumbnail = searchResult['pagemap']['cse_thumbnail'];
       final title = searchResult['title'];
       final snippet = searchResult['snippet'];
@@ -145,6 +147,8 @@ class FireBasePage {
       try {
         await FirebaseFirestore.instance.collection('search_history').add({
           'userID': userID,
+          'summary' : summary,
+          'searchThreeText' : searchThreeText,
           'keyword': keyword,
           'cse_thumbnail': cseThumbnail[0]['src'],
           'display_link': displayLink,

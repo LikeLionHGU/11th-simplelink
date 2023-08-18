@@ -134,10 +134,12 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         print(index);
                         return Card(
+
                             color: const Color(0xffF1F1F1),
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 24, vertical: 4),
                             child: ListTile(
+                              // onTap: ,
                               contentPadding: EdgeInsets.zero,
                               title: Padding(
                                 padding: const EdgeInsets.only(left: 8),
@@ -161,7 +163,10 @@ class _HomePageState extends State<HomePage> {
                                   });
                                 },
                               ),
-                            ));
+                            ),
+
+
+                        );
                       },
                     );
                   }
