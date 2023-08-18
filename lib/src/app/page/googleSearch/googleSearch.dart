@@ -187,6 +187,7 @@ class _SearchFormState extends State<SearchForm> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: const Color(0xff0067C0),
         title: const Text(
           "검색결과",
@@ -395,7 +396,6 @@ class _SearchFormState extends State<SearchForm> {
               itemCount: _searchResults.length > 2 ? 2 : _searchResults.length,
             ),
           ),
-
           const Row(
             children: [
               SizedBox(width: 24),
@@ -422,15 +422,17 @@ class _SearchFormState extends State<SearchForm> {
               color: const Color(0xffF1F1F1),
               borderRadius: BorderRadius.circular(5.0),
             ),
-            child: _summaryExist?  Text(
-              _searchResult,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xff333333),
-                height: 1.2,
-              ),
-            ):  CircularProgressIndicator(),
+            child: _summaryExist
+                ? Text(
+                    _searchResult,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff333333),
+                      height: 1.2,
+                    ),
+                  )
+                : CircularProgressIndicator(),
           ),
           const Row(
             children: [
