@@ -7,7 +7,7 @@
         </intent>
     </queries>
     <application
-        android:label="google_search_api"
+        android:label="SimpleLink"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity">
