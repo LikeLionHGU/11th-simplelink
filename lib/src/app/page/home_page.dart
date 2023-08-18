@@ -58,13 +58,15 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.bookmark_border_outlined),
               color: Colors.white,
               onPressed: () {
+                completionFun();
                 // 다른 페이지로 넘어가는 동작 구현
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BookmarkPage(),
-                  ),
-                );
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => BookmarkPage(),
+                //
+                //   ),
+                // );
               },
             ),
           ],

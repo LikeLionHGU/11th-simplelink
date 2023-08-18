@@ -12,8 +12,6 @@
     <list default="true" id="bf8c233b-e127-44c2-91a6-d38d7332af11" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../SimpleLink-Hani_feat-5/.idea/SimpleLink.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/app/page/bookmark.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/bookmark.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/app/page/googleSearch/firebase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/googleSearch/firebase.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app/page/home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/home_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
