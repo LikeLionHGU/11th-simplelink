@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'firebase.dart';
 import '../../../response_model2.dart';
+import '../../../response_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SearchForm extends StatefulWidget {
@@ -17,6 +18,8 @@ class SearchForm extends StatefulWidget {
 }
 
 class _SearchFormState extends State<SearchForm> {
+  late ResponseModel _responseModel;
+  late ResponseModel2 _responseModel2;
   String _searchResult = '';
   FireBasePage firebase = FireBasePage();
   String _searchText = '';
@@ -25,7 +28,6 @@ class _SearchFormState extends State<SearchForm> {
   List<bool> _bookmarked = []; // 북마크 상태 리스트 생성
   bool _summaryExist = false;
   List<Map<String, dynamic>> messages = [];
-  late ResponseModel2 _responseModel;
   List<String> textBoxTexts = [];
   late List<String> searchTexts = [];
 
@@ -80,7 +82,7 @@ class _SearchFormState extends State<SearchForm> {
 
       setState(() {
         final responseData = json.decode(response.body) as Map<String, dynamic>;
-        _responseModel = ResponseModel2.fromJson(responseData);
+        _responseModel = ResponseModel.fromJson(responseData);
         messages.last["content"] = _responseModel.choices.isNotEmpty
             ? (_responseModel.choices[0].message.content)
             : '';
@@ -167,13 +169,13 @@ class _SearchFormState extends State<SearchForm> {
 
       if (items.isNotEmpty) {
         await firebase.saveHistoryToFirebase(
-          query,
+          _questionText,
           items
               .sublist(0, 2)
               .map((item) => item as Map<String, dynamic>)
               .toList(),
         );
-        await firebase.saveKeywordAndUserIDToFirebase(query);
+        await firebase.saveKeywordAndUserIDToFirebase(_questionText);
       }
 
       return items;
@@ -181,6 +183,8 @@ class _SearchFormState extends State<SearchForm> {
       throw Exception('Failed to load search results');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -451,7 +455,7 @@ class _SearchFormState extends State<SearchForm> {
             ],
           ),
           const SizedBox(height: 12),
-          Column(children: searchTexts.map((text) => TextBox(text)).toList()),
+          Column(children: searchTexts.map((text) => TextBox(text, messages: messages,)).toList()),
           const SizedBox(height: 50),
         ],
       ),
@@ -474,13 +478,65 @@ class _SearchFormState extends State<SearchForm> {
 class TextBox extends StatefulWidget {
   final String text;
 
-  const TextBox(this.text, {super.key});
+  final List<Map<String, dynamic>> messages;
+  const TextBox(this.text, {super.key, required this.messages});
 
   @override
   State<TextBox> createState() => _TextBoxState();
 }
 
 class _TextBoxState extends State<TextBox> {
+  late ResponseModel responseModel;
+  completionFun(String buttonText) async {
+
+    setState(() {
+      widget.messages.add({"role": "user", "content": buttonText});
+      widget.messages.add({"role": "assistant", "content": 'Loading...'});
+    });
+
+    print(
+        "API 요청 전: ${buttonText} Curious about this, what should I Google? Answer only one keyword");
+    final response = await http.post(
+      Uri.parse('https://api.openai.com/v1/chat/completions'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${dotenv.env['token']}',
+      },
+      body: jsonEncode({
+        "messages": [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {
+            "role": "user",
+            "content":
+            "${buttonText} Curious about this, what should I Google? Answer only one keyword"
+          }
+        ],
+        "model": "gpt-3.5-turbo", // Use the appropriate chat model
+      }),
+    );
+
+
+    setState(() {
+      final responseData = json.decode(response.body) as Map<String, dynamic>;
+      responseModel = ResponseModel.fromJson(responseData);
+      widget.messages.last["content"] = responseModel.choices.isNotEmpty
+          ? (responseModel.choices[0].message.content)
+          : '';
+      debugPrint(widget.messages.last["content"]);
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchForm(
+          initialQuery: responseModel.choices.isNotEmpty
+              ? responseModel.choices[0].message.content
+              : '',
+          question: buttonText,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     print("로드 됨! ${widget.text}");
@@ -489,7 +545,7 @@ class _TextBoxState extends State<TextBox> {
       width: 342,
       height: 40,
       margin: const EdgeInsets.only(bottom: 8, left: 24, right: 24),
-      padding: const EdgeInsets.only(top: 12, bottom: 12, left: 13, right: 13),
+      // padding: const EdgeInsets.only(top: 12, bottom: 12, left: 13, right: 13),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         color: Colors.white,
@@ -503,16 +559,28 @@ class _TextBoxState extends State<TextBox> {
           ),
         ],
       ),
-      child: Text(
-        formattedText,
-        style: const TextStyle(
-          fontFamily: "SF Pro",
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: Color(0xff1b1b1b),
-          height: 14 / 12,
+      child: TextButton(
+
+        onPressed: () {
+          completionFun(formattedText);
+        },
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            textAlign: TextAlign.left,
+            formattedText,
+            style: const TextStyle(
+
+              fontFamily: "SF Pro",
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Color(0xff1b1b1b),
+              height: 14 / 12,
+            ),
+          ),
         ),
       ),
+      
     );
   }
 }
