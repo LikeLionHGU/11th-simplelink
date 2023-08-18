@@ -1,21 +1,37 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
+import 'package:google_search_api/src/app/page/bookmark.dart';
 import 'package:google_search_api/src/app/page/googleSearch/googleSearch.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../response_model.dart';
+import 'googleSearch/firebase.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage();
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  FireBasePage firebase = FireBasePage();
   late final TextEditingController promptController;
   List<Map<String, dynamic>> messages = [];
   late ResponseModel _responseModel;
+  final List<String> _previousQuestions = [
+    "논문 잘 쓰는 방법",
+    "민증 재발급하는 방법",
+    "서울에서 경주로 가는 방법",
+    "태풍 대비하는 방법",
+    "개강 전 준비해야 할 일",
+    "개강 전 준비해야 할 일",
+    "개강 전 준비해야 할 일",
+    "개강 전 준비해야 할 일",
+  ];
+  var _showAllPreviousQuestions = false;
 
   @override
   void initState() {
@@ -32,22 +48,146 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xff444653),
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text(
-            'Home',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xff444653),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: PromptBldr(messages: messages)),
-            TextFormFieldBldr(
-                promptController: promptController, btnFun: completionFun),
+          backgroundColor: const Color(0xff0067C0),
+          title: Image.asset('assets/logo.png', // 로고 이미지 경로
+              width: 80),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bookmark_border_outlined),
+              color: Colors.white,
+              onPressed: () {
+                // 다른 페이지로 넘어가는 동작 구현
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookmarkPage(),
+                  ),
+                );
+              },
+            ),
           ],
-        ));
+        ),
+        body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Container(
+              decoration: const BoxDecoration(
+                color: Color(0xff0067C0),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              height: 300,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(24, 100, 24, 0),
+                      child: Text(
+                        "무엇이든 물어보세요 \n링크로 대답해 드릴게요",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffffffff),
+                            height: 1.5),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormFieldBldr(
+                            promptController: promptController,
+                            btnFun: completionFun)),
+                  ])),
+          const Padding(
+              padding: EdgeInsets.fromLTRB(24, 32, 24, 8),
+              child: Text(
+                "이전에 질문했던 기록",
+                style: TextStyle(
+                  fontFamily: "SF Pro",
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff1b1b1b),
+                  height: 24 / 20,
+                ),
+                textAlign: TextAlign.left,
+              )),
+          Expanded(
+            child: FutureBuilder(
+                future: firebase.getAllKeywordsByUserID(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    print("length:${snapshot.data!.length }");
+                    print("bool:${_showAllPreviousQuestions }");
+                    final List<String> keywords = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: _showAllPreviousQuestions
+                          ? snapshot.data!.length
+                          : 5, // 최대 5개까지만 표시하거나 모두 표시
+                      itemBuilder: (context, index) {
+                        print(index);
+                        return Card(
+                            color: const Color(0xffF1F1F1),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 4),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(
+                                  snapshot.data![index],
+                                  style: const TextStyle(
+                                      // fontFamily: "SF Pro",
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff1b1b1b),
+                                      height: 1),
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close),
+                                iconSize: 15,
+                                onPressed: () {
+                                  // X 버튼을 눌렀을 때의 동작 구현
+                                  setState(() {
+                                    snapshot.data!.removeAt(index);
+                                  });
+                                },
+                              ),
+                            ));
+                      },
+                    );
+                  }
+
+            if (snapshot.data!.length > 5 && !_showAllPreviousQuestions){
+              TextButton(
+                onPressed: () {
+                  print(firebase.getTop5KeywordsByUserID());
+                  completionFun();
+                  setState(() {
+                    _showAllPreviousQuestions = true; // "기록 더보기" 버튼을 누르면 모두 표시
+                  });
+                },
+                child: const Text("펼쳐보기",
+                    style: TextStyle(
+                      fontFamily: "SF Pro",
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xff727781),
+                      height: 14 / 12,
+                      decoration: TextDecoration.underline,
+                    )));}
+
+
+                }
+            ),
+          ),
+        ]));
   }
 
   completionFun() async {
@@ -76,8 +216,6 @@ class _HomePageState extends State<HomePage> {
         "model": "gpt-3.5-turbo", // Use the appropriate chat model
       }),
     );
-
-    print("API 응답: ${response.body}");
 
     setState(() {
       final responseData = json.decode(response.body) as Map<String, dynamic>;
@@ -121,7 +259,8 @@ class PromptBldr extends StatelessWidget {
                       return Text(
                         message['content'],
                         textAlign: TextAlign.start,
-                        style: TextStyle(fontSize: 25, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 25, color: Colors.white),
                       );
                     }).toList(),
                   ),
@@ -139,47 +278,63 @@ class TextFormFieldBldr extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-        alignment: Alignment.bottomCenter,
-        child: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 50),
-            child: Row(children: [
-              Flexible(
-                child: TextFormField(
-                  cursorColor: Colors.white,
-                  controller: promptController,
-                  autofocus: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 20),
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                          color: Color(0xff444653)), // BorderSide
-                      borderRadius: BorderRadius.circular(5.5),
-                    ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Color(0xff444653)), // BorderSide
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xff444653),
-                    hintText: "Ask me anything!",
-                    hintStyle: const TextStyle(color: Colors.grey),
-                  ),
-                ), // InputDecoration / TextFormField
-              ), // Flexible
-              Container(
-                color: const Color(0xff19bc99),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: IconButton(
-                    onPressed: () => btnFun(),
-                    icon: const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-                  ),
+    return SizedBox(
+      height: 54,
+      child: TextFormField(
+        textAlignVertical: TextAlignVertical.center,
+        cursorColor: Colors.white,
+        controller: promptController,
+        autofocus: true,
+        style: const TextStyle(color: Colors.black87, fontSize: 16, height: 2),
+        decoration: InputDecoration(
+          contentPadding:
+              EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xff444653)),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          hintText: "질문할 내용을 입력하세요.",
+          hintStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Color(0xff727781),
+            height: 2,
+          ),
+          suffix: Container(
+            width: 30,
+            height: 54,
+            // 수정된 부분
+
+            alignment: Alignment.center,
+
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xff00429A),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                  size: 18,
                 ),
-              ),
-            ])));
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
+
+// children: [
+//           Expanded(child: PromptBldr(messages: messages)),
+//           TextFormFieldBldr(
+//               promptController: promptController, btnFun: completionFun),
+//         ],

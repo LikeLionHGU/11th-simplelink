@@ -5,7 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:google_search_api/src/app/page/home_page.dart';
 import 'package:google_search_api/src/app/page/login.dart';
 
+import 'googleSearch/firebase.dart';
+
 class Home extends StatelessWidget {
+
+  FireBasePage firebase  = FireBasePage();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,7 +20,8 @@ class Home extends StatelessWidget {
           if (snapshot.data == null) {
             return Login();
           } else {
-            return HomePage();
+
+            return  HomePage();
           }
         },
       ),
