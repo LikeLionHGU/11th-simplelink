@@ -122,16 +122,29 @@ class _BookmarkPageState extends State<BookmarkPage> {
 
                         IconButton(
                           icon: Icon(
-                             Icons.bookmark,
+                            Icons.bookmark,
                           ),
                           onPressed: () async {
-                            bool newBookmark = !_bookmarked[index];
-                            Future<String?> bookmarkDocumentID =  firebase.updateBookmarkInBookmarkPage(keyword, snapshot.data![index], newBookmark); // 북마크 업데이트
-                            setState(() {
-                              _bookmarked[index] = newBookmark; // 해당 카드의 북마크 상태를 토글한다.
-                            });
+                            print(link);
+                            print(keyword);
+                            String? bookmarkDocumentID = await firebase.deleteBookmarkInBookmarkPage(keyword, link);
+
+                            // 북마크 삭제 성공시 리스트 업데이트 및 화면 갱신
+                            if (bookmarkDocumentID != null) {
+                              setState(() {
+                                _bookmarks = firebase.getUserBookmarks(); // Comment: userId 전달
+                              });
+                            } else {
+                              // 오류 메시지 표시
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('북마크 삭제에 실패하였습니다. 다시 시도해 주세요.'),
+                                ),
+                              );
+                            }
                           },
                         ),
+
 
 
                       ],

@@ -4,51 +4,24 @@ import 'package:flutter/cupertino.dart';
 
 class FireBasePage {
   //북마크 업데이트 함수
-  Future<String?> updateBookmarkInBookmarkPage(String keyword, dynamic bookmark, bool isAdd) async {
+  Future<String?> deleteBookmarkInBookmarkPage(String keyword, String Link) async {
     String userID = FirebaseAuth.instance.currentUser!.uid;
-    DocumentSnapshot? existingBookmark;
-    // 북마크가 이미 있는지 확인
-    QuerySnapshot result = await FirebaseFirestore.instance
+    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
         .collection('bookmarks')
         .where("userID", isEqualTo: userID)
-        .where("link", isEqualTo: bookmark['link'])
+        .where("link", isEqualTo: Link)
         .limit(1)
         .get();
 
-    for (var document in result.docs) {
-      existingBookmark = document;
+    if (snapshot.docs.isNotEmpty) {
+      await FirebaseFirestore.instance
+          .collection('bookmarks')
+          .doc(snapshot.docs[0].id)
+          .delete();
     }
 
-    if (isAdd && existingBookmark == null) {
-      // 북마크 추가
-      try {
-        DocumentReference addedBookmark = await FirebaseFirestore.instance.collection('bookmarks').add({
-          'userID': userID,
-          'keyword': keyword,
-          'cse_thumbnail': bookmark['cse_thumbnail'],
-          'displayLink': bookmark['displayLink'],
-          'title': bookmark['title'],
-          'snippet': bookmark['snippet'],
-          'link': bookmark['link'],
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-        return addedBookmark.id;
-      } catch (e) {
-        print('Error saving bookmark to Firebase: $e');
-        return null;
-      }
-    } else if (!isAdd && existingBookmark != null) {
-      // 북마크 삭제
-      try {
-        await FirebaseFirestore.instance.collection('bookmarks').doc(existingBookmark.id).delete();
-        return null;
-      } catch (e) {
-        print('Error deleting bookmark from Firebase: $e');
-        return null;
-      }
-    }
-    return null;
   }
+
   //검색 세션 페이지 정보
   Future<List<Map<String, dynamic>>> getSearchHistory() async {
     String userID = FirebaseAuth.instance.currentUser!.uid;

@@ -11,25 +11,10 @@
   <component name="ChangeListManager">
     <list default="true" id="bf8c233b-e127-44c2-91a6-d38d7332af11" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../SimpleLink-Hani_feat-5/.idea/SimpleLink.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/SF-Pro.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/blog.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/google.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/kakao.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/splash.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/tistory.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/app/page/bookmark.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/app/page/sss.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins2.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Runner.xcworkspace/contents.xcworkspacedata" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/page/home_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/app/page/bookmark.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/bookmark.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app/page/googleSearch/firebase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/googleSearch/firebase.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/app/page/googleSearch/googleSearch.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/googleSearch/googleSearch.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/app/page/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/home.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app/page/home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app/page/home_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

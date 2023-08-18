@@ -288,7 +288,7 @@ class TextFormFieldBldr extends StatelessWidget {
         style: const TextStyle(color: Colors.black87, fontSize: 16, height: 2),
         decoration: InputDecoration(
           contentPadding:
-              EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
+          EdgeInsets.only(top: 12, left: 16, bottom: 12, right: 16),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white),
             borderRadius: BorderRadius.circular(8),
@@ -307,8 +307,7 @@ class TextFormFieldBldr extends StatelessWidget {
           ),
           suffix: Container(
             width: 30,
-            height: 54,
-            // 수정된 부분
+            height: 54, // 수정된 부분
 
             alignment: Alignment.center,
 
